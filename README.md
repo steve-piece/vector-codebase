@@ -1,6 +1,10 @@
-# Codebase Embedding Workflow
+# Vector-Codebase: A Semantic Database for Code
 
-This workflow provides a script to scan a codebase, generate vector embeddings for each file using the OpenAI API, and ingest them into a Supabase PostgreSQL database.
+This workflow provides a script to scan your codebase, generate vector embeddings for each file, and ingest them into a Supabase PostgreSQL database. It's designed to keep your vector store in sync with your git repository, automatically updating embeddings as your code evolves.
+
+While it's pre-configured for Supabase, the ingestion logic in `ingest-embeddings.mjs` can be customized to work with any vector database of your choice.
+
+For an enhanced AI-powered development experience, consider using this workflow in parallel with the [Supabase MCP](https://www.npmjs.com/package/@supabase/mcp-server-cli), allowing an AI assistant to query embeddings for a deeper understanding of your codebase.
 
 ## Prerequisites
 
@@ -110,11 +114,4 @@ The GitHub Action needs access to your keys to run. You must add them as encrypt
 
 1.  Go to your GitHub repository's page.
 2.  Click on `Settings` > `Secrets and variables` > `Actions`.
-3.  Click `New repository secret` for each of the following secrets:
-    - `OPENAI_API_KEY`: Your OpenAI API key.
-    - `SUPABASE_URL`: Your Supabase project URL.
-    - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key.
-
-### Step 3: Push to GitHub
-
-Once you've set up the secrets and moved the workflow file, commit and push the changes to your `main` branch. The action will run automatically on this push and every subsequent push, keeping your codebase embeddings perfectly in sync. You can monitor the progress in the `Actions` tab of your GitHub repository.
+3.  Click `
