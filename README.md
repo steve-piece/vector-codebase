@@ -1,15 +1,22 @@
 # Vector-Codebase: A Semantic Database for Code
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](#)
+![Node](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)
+![Package%20Managers](https://img.shields.io/badge/pkg-npm%20%7C%20pnpm%20%7C%20yarn-orange)
+![OpenAI](https://img.shields.io/badge/OpenAI-embeddings-412991?logo=openai&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?logo=supabase&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gray.svg)](LICENSE)
+
 This workflow provides a script to scan your codebase, generate vector embeddings for each file, and ingest them into a Supabase PostgreSQL database. It's designed to keep your vector store in sync with your git repository, automatically updating embeddings as your code evolves.
 
 While it's pre-configured for Supabase, the ingestion logic in `ingest-embeddings.mjs` can be customized to work with any vector database of your choice.
 
-For an enhanced AI-powered development experience, consider using this workflow in parallel with the [Supabase MCP](https://www.npmjs.com/package/@supabase/mcp-server-cli), allowing an AI assistant to query embeddings for a deeper understanding of your codebase.
+For an enhanced AI-powered development experience, consider using this workflow in parallel with the [Supabase MCP](https://supabase.com/docs/guides/getting-started/mcp), allowing an AI assistant to query embeddings for a deeper understanding of your codebase.
 
 ## Prerequisites
 
 - Node.js (v18 or higher is recommended)
-- pnpm (or your preferred package manager)
+- npm (or pnpm/yarn)
 - An existing Supabase project
 - An OpenAI API key
 
@@ -19,15 +26,18 @@ For an enhanced AI-powered development experience, consider using this workflow 
 
 Follow these steps to set up and run the embedding workflow for your project.
 
-### Step 1: Install Dependencies
+### Step 1: Install the Workflow (merge deps into root)
 
-The `embedding_workflow` directory contains its own `package.json` file, so you can install the required dependencies locally to this folder.
+Run the installer from your project root. It installs dependencies into your root `node_modules` (merging with any existing packages) and scaffolds the `embeddings_workflow` folder.
 
 ```bash
-cd embedding_workflow
-pnpm install
-cd ..
+bash embedding_workflow/install-embeddings-workflow.sh
 ```
+
+Options:
+
+- `--force`: overwrite existing files in `embeddings_workflow`
+- `--pm npm|yarn|pnpm`: choose a package manager (defaults to auto-detect; npm prioritized)
 
 ### Step 2: Set Up the Supabase Database
 
@@ -73,10 +83,10 @@ This folder contains a template environment file named `env.txt`.
 
 ### Step 4: Run the Script
 
-Once your database and environment variables are set up, run the script from the **root of your project** using the following command. The `node --env-file=.env` flag ensures that your environment variables are loaded correctly.
+Once your database and environment variables are set up, run the script from the **root of your project** using the following command. The script will automatically load your credentials from the `.env` file.
 
 ```bash
-node --env-file=.env embedding_workflow/ingest-embeddings.mjs
+node embeddings_workflow/ingest-embeddings.mjs
 ```
 
 The script will:
@@ -110,8 +120,58 @@ To keep your embeddings in sync with your codebase automatically, you can use th
 
 ### Step 2: Set Up Repository Secrets
 
-The GitHub Action needs access to your keys to run. You must add them as encrypted secrets to your GitHub repository.
+Add these encrypted repository secrets (Settings → Secrets and variables → Actions):
 
-1.  Go to your GitHub repository's page.
-2.  Click on `Settings` > `Secrets and variables` > `Actions`.
-3.  Click `
+- `OPENAI_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+### Step 3: Example Workflow
+
+If you use npm:
+
+```yaml
+name: Sync Codebase Embeddings
+on:
+  push:
+    branches: [main]
+jobs:
+  sync-embeddings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+      - run: npm ci || npm install
+      - run: node embeddings_workflow/ingest-embeddings.mjs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+```
+
+If you use pnpm:
+
+```yaml
+name: Sync Codebase Embeddings
+on:
+  push:
+    branches: [main]
+jobs:
+  sync-embeddings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: node embeddings_workflow/ingest-embeddings.mjs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+```

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { glob } from "glob";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
@@ -115,17 +116,15 @@ async function generateAndIngestEmbeddings() {
 
       console.log(`Ingesting embedding for ${relativePath} into Supabase...`);
 
-      const { data, error } = await supabase
-        .from("codebase_embeddings")
-        .upsert(
-          {
-            file_path: relativePath,
-            content,
-            embedding,
-            metadata,
-          },
-          { onConflict: "file_path" }
-        );
+      const { data, error } = await supabase.from("codebase_embeddings").upsert(
+        {
+          file_path: relativePath,
+          content,
+          embedding,
+          metadata,
+        },
+        { onConflict: "file_path" }
+      );
 
       if (error) {
         console.error(`Error ingesting ${relativePath}:`, error);
