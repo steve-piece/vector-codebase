@@ -1,0 +1,13 @@
+{
+  "name": "embedding-workflow",
+  "version": "1.0.0",
+  "description": "A script to generate and sync codebase embeddings with a Supabase database.",
+  "type": "module",
+  "main": "ingest-embeddings.mjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "find-up": "^8.0.0",
+    "glob": "^11.0.3",
+    "openai": "^5.23.0"
+  }
+}

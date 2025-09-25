@@ -1,0 +1,30 @@
+name: Sync Codebase Embeddings
+
+on:
+  push:
+    branches:
+      - main # Or whichever branch you want to track
+
+jobs:
+  sync-embeddings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18" # Or your preferred Node.js version
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run embedding script
+        run: node --env-file=.env embedding_workflow/ingest-embeddings.mjs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
