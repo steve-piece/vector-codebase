@@ -122,11 +122,10 @@ Next steps:
   2) Enable pgvector and create table using embeddings_workflow/update_schema.sql (or README)
   3) Run the ingestion script from project root:
      node embeddings_workflow/ingest-embeddings.mjs
-
 Tips:
   - Re-run with --force to overwrite files if you update this template
   - Use --pm npm|yarn|pnpm to force a package manager
-
+  
 EONEXT
 
 
