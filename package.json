@@ -4,8 +4,9 @@
   "description": "A script to generate and sync codebase embeddings with a Supabase database.",
   "type": "module",
   "main": "ingest-embeddings.mjs",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.57.4",
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "dotenv": "^17.2.2",
     "find-up": "^8.0.0",
     "glob": "^11.0.3",
     "openai": "^5.23.0",
