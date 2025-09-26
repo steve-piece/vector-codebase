@@ -1,177 +1,186 @@
 # Vector-Codebase: A Semantic Database for Code
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](#)
-![Node](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)
-![Package%20Managers](https://img.shields.io/badge/pkg-npm%20%7C%20pnpm%20%7C%20yarn-orange)
-![OpenAI](https://img.shields.io/badge/OpenAI-embeddings-412991?logo=openai&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?logo=supabase&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-gray.svg)](LICENSE)
-
-This workflow provides a script to scan your codebase, generate vector embeddings for each file, and ingest them into a Supabase PostgreSQL database. It's designed to keep your vector store in sync with your git repository, automatically updating embeddings as your code evolves.
-
-While it's pre-configured for Supabase, the ingestion logic in `ingest-embeddings.mjs` can be customized to work with any vector database of your choice.
-
-For an enhanced AI-powered development experience, consider using this workflow in parallel with the [Supabase MCP](https://supabase.com/docs/guides/getting-started/mcp), allowing an AI assistant to query embeddings for a deeper understanding of your codebase.
-
-## Prerequisites
-
-- Node.js (v18 or higher is recommended)
-- npm (or pnpm/yarn)
-- An existing Supabase project
-- An OpenAI API key
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
+<h3 style="margin: 0; color: white;">🚀 Generate vector embeddings for your codebase and store them in Supabase for AI-powered code search and understanding.</h3>
+</div>
 
 ---
 
-## Setup Guide
+## 🎯 Quick Setup
 
-Follow these steps to set up and run the embedding workflow for your project.
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #28a745; border-radius: 5px; margin: 10px 0;">
+<strong>Prerequisites:</strong> Node.js, npm/pnpm/yarn, Supabase project, OpenAI API key
+</div>
 
-### Step 1: Install the Workflow (merge deps into root)
+### <span style="color: #e74c3c;">📦 Step 1: Install Workflow</span>
 
-Run the installer from your project root. It installs dependencies into your root `node_modules` (merging with any existing packages) and scaffolds the `embeddings_workflow` folder.
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #e74c3c; border-radius: 5px;">
+Run from your project root:
+</div>
+
+<div style="background-color: #1a202c; padding: 15px; border-radius: 8px; margin: 10px 0; color: #e2e8f0;">
+
+**One-liner installation:**
 
 ```bash
-bash embedding_workflow/install-embeddings-workflow.sh
+curl -sSL https://raw.githubusercontent.com/steve-piece/vector-codebase/main/install-embeddings-workflow.sh | bash
 ```
 
-Options:
+**Manual installation:**
 
-- `--force`: overwrite existing files in `embeddings_workflow`
-- `--pm npm|yarn|pnpm`: choose a package manager (defaults to auto-detect; npm prioritized)
-
-### Step 2: Set Up the Supabase Database
-
-You need to enable the `pgvector` extension and create a table to store the embeddings. Run the following SQL commands in your Supabase project's SQL Editor.
-
-```sql
--- Enable the pgvector extension which is required for vector types
-create extension if not exists vector with schema extensions;
-
--- Create the table to store codebase embeddings
-create table
-  public.codebase_embeddings (
-    id bigserial,
-    file_path text not null,
-    content text null,
-    embedding vector(1536) null, -- Corresponds to OpenAI text-embedding-3-small model
-    metadata jsonb null, -- For storing file extension, size, etc.
-    constraint codebase_embeddings_pkey primary key (id),
-    constraint codebase_embeddings_file_path_key unique (file_path)
-  ) tablespace pg_default;
+```bash
+# Clone and run installer
+git clone https://github.com/steve-piece/vector-codebase.git temp-vector-codebase
+cd temp-vector-codebase
+bash install-embeddings-workflow.sh --target ../your-project
+cd ../your-project
+rm -rf temp-vector-codebase
 ```
 
-### Step 3: Configure Environment Variables
+</div>
 
-This folder contains a template environment file named `env.txt`.
+### <span style="color: #3498db;">🗄️ Step 2: Setup Database</span>
 
-1.  **Rename the file:** Rename `env.txt` to `.env`. This file should be placed in the root directory of your project.
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; border-radius: 5px;">
+Copy and paste the entire <strong>vector-search-functions.sql</strong> file into your Supabase SQL Editor and run it.
+</div>
 
-    ```bash
-    # Run from the project root
-    mv embedding_workflow/env.txt .env
-    ```
+<div style="background-color: #d1ecf1; padding: 15px; border-left: 4px solid #bee5eb; border-radius: 5px; margin: 10px 0;">
+<strong>💡 This includes:</strong> pgvector extension, table creation, RLS setup, and AI analysis functions.
+</div>
 
-2.  **Add your credentials:** Open the `.env` file and replace the placeholder values with your actual credentials from your Supabase project and OpenAI dashboard.
+### <span style="color: #f39c12;">⚙️ Step 3: Configure Environment</span>
 
-    ```env
-    OPENAI_API_KEY="your-openai-api-key"
-    SUPABASE_URL="your-supabase-project-url"
-    SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
-    ```
+<div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #f39c12; border-radius: 5px;">
+Edit <code>.env</code> with your credentials:
+</div>
 
-    > **Note:** This script uses the service role key to bypass any Row Level Security policies when ingesting embeddings. Keep this key secure.
+<div style="background-color: #1a202c; padding: 15px; border-radius: 8px; margin: 10px 0; color: #e2e8f0;">
 
-### Step 4: Run the Script
+```env
+OPENAI_API_KEY="your-openai-api-key"
+SUPABASE_URL="your-supabase-project-url"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+```
 
-Once your database and environment variables are set up, run the script from the **root of your project** using the following command. The script will automatically load your credentials from the `.env` file.
+</div>
+
+### <span style="color: #27ae60;">▶️ Step 4: Run Script</span>
+
+<div style="background-color: #d4edda; padding: 15px; border-left: 4px solid #27ae60; border-radius: 5px;">
+Execute the embedding generation:
+</div>
+
+<div style="background-color: #1a202c; padding: 15px; border-radius: 8px; margin: 10px 0; color: #e2e8f0;">
 
 ```bash
 node embeddings_workflow/ingest-embeddings.mjs
 ```
 
-The script will:
-
-- Scan your project files, ignoring anything listed in your root `.gitignore` file.
-- **Delete embeddings** for any files that have been removed from the codebase.
-- Generate an embedding for the content of each file.
-- **Create or update** the file path, content, and embedding in your `codebase_embeddings` table.
-
-You will see progress logged to your console.
+</div>
 
 ---
 
-## Automating with GitHub Actions
+## <span style="color: #9b59b6;">🔄 Auto-sync with GitHub Actions (Optional)</span>
 
-To keep your embeddings in sync with your codebase automatically, you can use the provided GitHub Actions workflow. This will run the script every time you push changes to your `main` branch.
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #9b59b6; border-radius: 5px; margin: 10px 0;">
+The <code>github-actions/</code> folder contains 5 pre-configured workflow variants for different package managers and triggers.
+</div>
 
-### Step 1: Create the Workflow File
+### 📋 Available Workflow Types:
 
-1.  Create a `.github/workflows` directory in the root of your project if you don't already have one.
+**Trigger-based:**
 
-    ```bash
-    mkdir -p .github/workflows
-    ```
+- **`npm-workflow.yml`** - Runs on every push to main (npm)
+- **`pnpm-workflow.yml`** - Runs on every push to main (pnpm)
+- **`yarn-workflow.yml`** - Runs on every push to main (yarn)
+- **`manual-workflow.yml`** - Manual trigger only (workflow_dispatch)
+- **`scheduled-workflow.yml`** - Daily at 2 AM UTC + manual trigger
 
-2.  Move the `sync-embeddings.yml` file from the `embedding_workflow` directory into the new `.github/workflows` directory.
+### 🚀 Setup Your Workflow:
 
-    ```bash
-    mv embedding_workflow/sync-embeddings.yml .github/workflows/sync-embeddings.yml
-    ```
+<div style="background-color: #1a202c; padding: 15px; border-radius: 8px; margin: 10px 0; color: #e2e8f0;">
 
-### Step 2: Set Up Repository Secrets
+```bash
+# Create workflows directory
+mkdir -p .github/workflows
 
-Add these encrypted repository secrets (Settings → Secrets and variables → Actions):
+# Choose ONE workflow that matches your setup:
+
+# For npm users:
+mv embeddings_workflow/github-actions/npm-workflow.yml .github/workflows/sync-embeddings.yml
+
+# For pnpm users:
+mv embeddings_workflow/github-actions/pnpm-workflow.yml .github/workflows/sync-embeddings.yml
+
+# For yarn users:
+mv embeddings_workflow/github-actions/yarn-workflow.yml .github/workflows/sync-embeddings.yml
+
+# For manual-only runs:
+mv embeddings_workflow/github-actions/manual-workflow.yml .github/workflows/sync-embeddings.yml
+
+# For scheduled daily runs:
+mv embeddings_workflow/github-actions/scheduled-workflow.yml .github/workflows/sync-embeddings.yml
+```
+
+</div>
+
+<div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #f39c12; border-radius: 5px; margin: 10px 0;">
+<strong>⚡ Repository Secrets Required:</strong><br>
+Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+</div>
 
 - `OPENAI_API_KEY`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-### Step 3: Example Workflow
+---
 
-If you use npm:
+## <span style="color: #8e44ad;">🤖 AI Coding Assistant Integration (Optional)</span>
 
-```yaml
-name: Sync Codebase Embeddings
-on:
-  push:
-    branches: [main]
-jobs:
-  sync-embeddings:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-      - run: npm ci || npm install
-      - run: node embeddings_workflow/ingest-embeddings.mjs
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #8e44ad; border-radius: 5px; margin: 10px 0;">
+Transform any AI coding assistant into a <strong>context-aware developer</strong> that understands your codebase architecture, finds existing implementations, and maintains consistency across your project.
+</div>
+
+**🎯 What this enables:**
+
+- **Smart code placement** - AI knows where files belong based on your project structure
+- **Duplicate prevention** - AI finds existing similar functions before creating new ones
+- **Pattern consistency** - AI matches your existing code style and architecture
+- **Context-aware suggestions** - AI understands your tech stack and conventions
+
+### Setup Complete!
+
+<div style="background-color: #d4edda; padding: 15px; border-left: 4px solid #28a745; border-radius: 5px;">
+If you ran <code>vector-search-functions.sql</code> in Step 2, you already have the AI analysis functions set up! The database setup includes both the table creation and all 4 RPC functions.
+</div>
+
+<div style="background-color: #d1ecf1; padding: 15px; border-left: 4px solid #bee5eb; border-radius: 5px; margin: 10px 0;">
+<strong>💡 Performance Note:</strong> For small codebases (&lt; 1000 files), no vector index is needed - PostgreSQL's sequential scan is actually faster! The index is only beneficial for large projects.
+</div>
+
+### Add AI Agent Guidelines (Recommended)
+
+<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #8e44ad; border-radius: 5px;">
+Copy the <code>agents.md</code> file to your project root to provide AI assistants with complete codebase analysis instructions and SQL examples.
+</div>
+
+<div style="background-color: #1a202c; padding: 15px; border-radius: 8px; margin: 10px 0; color: #e2e8f0;">
+
+```bash
+# Copy AI agent guidelines to your project (includes complete SQL examples)
+cp embeddings_workflow/agents.md agents.md
 ```
 
-If you use pnpm:
+</div>
 
-```yaml
-name: Sync Codebase Embeddings
-on:
-  push:
-    branches: [main]
-jobs:
-  sync-embeddings:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: node embeddings_workflow/ingest-embeddings.mjs
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-```
+### Available AI Functions
+
+- **`get_codebase_overview()`** - Understand project scope and technologies
+- **`find_existing_implementations()`** - Avoid duplicate code
+- **`find_architecture_patterns()`** - Match existing code patterns
+- **`analyze_directory_patterns()`** - Follow project organization
+
+<div style="background-color: #d1ecf1; padding: 15px; border-left: 4px solid #bee5eb; border-radius: 5px; margin: 10px 0;">
+<strong>💡 How it works:</strong> AI assistants call these functions before coding to understand your codebase architecture, find existing implementations, and maintain consistency with your project patterns.
+</div>
