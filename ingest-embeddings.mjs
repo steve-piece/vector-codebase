@@ -1,23 +1,23 @@
-import "dotenv/config";
 import { glob } from "glob";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import fs from "fs/promises";
 import path from "path";
+import { findUp } from "find-up";
 
 if (
   !process.env.SUPABASE_URL ||
-  !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  !process.env.SUPABASE_SECRET_KEY ||
   !process.env.OPENAI_API_KEY
 ) {
   throw new Error(
-    "Missing environment variables. Make sure to create a .env file with SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and OPENAI_API_KEY"
+    "Missing environment variables. Make sure to create a .env file with SUPABASE_URL, SUPABASE_SECRET_KEY, and OPENAI_API_KEY"
   );
 }
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SECRET_KEY
 );
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
